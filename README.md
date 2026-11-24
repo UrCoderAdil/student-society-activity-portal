@@ -1,68 +1,104 @@
 # Student Society Activity Portal
 
-**Web Engineering · Assignment 1 · Idea 08**
+**Web Engineering · Assignment 2 · Idea 08**
 
-A client-side portal for students to discover society events and save a personal RSVP plan. Find an event by searching or choosing a society, select **RSVP**, choose a seat count, then save. **My RSVPs** shows saved events and lets you remove them.
+Students can find society events and create, view, update, or remove a personal RSVP. This version keeps the layout and eight fictional event records from Assignment 1. PHP and SQLite handle availability checks and save the RSVP plan.
 
-- **Live demo** [Open the portal on GitHub Pages](https://urcoderadil.github.io/student-society-activity-portal/)
-- **Source** [View the GitHub repository](https://github.com/UrCoderAdil/student-society-activity-portal)
-- **Instructor rule or data variant** Pending. The demo uses a four-seat limit and rejects overlapping events. These demo decisions do not represent a confirmed instructor rule.
+**Instructor rule or data variant** Pending. The demo carries forward the four-seat limit per RSVP and checks for overlapping events. These are demo rules.
 
 ## Run locally
 
-Install Git and Python 3, then run these commands in PowerShell. You can also download the repository ZIP, extract it and start the server from the extracted folder.
+Use PHP **8.5** with PDO and `pdo_sqlite`. Python 3 is optional for the tests.
 
 ```powershell
-git clone https://github.com/UrCoderAdil/student-society-activity-portal.git
-Set-Location student-society-activity-portal
-py -3 -m http.server 8000 --bind 127.0.0.1
+git clone --branch assignment-2 --single-branch https://github.com/UrCoderAdil/student-society-activity-portal.git
+cd student-society-activity-portal
+php -v
+php --ri pdo_sqlite
+php db/seed.php
+php -S 127.0.0.1:8085 -t public
 ```
 
-Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Press `Ctrl+C` to stop the server. The app uses semantic HTML, CSS and vanilla JavaScript. It has no install, build, API, database or environment variable step.
+Open [http://127.0.0.1:8085/](http://127.0.0.1:8085/). Keep the server running while using the app. Press `Ctrl+C` to stop it. The seed command creates `var/portal.sqlite`, inserts the eight events, and preserves existing events and RSVPs when rerun. The database and PHP session files stay outside `public/` and are ignored by Git.
 
-## How the portal works
+On Windows, if PHP 8.5 is missing, extract the official PHP 8.5 ZIP into `C:\php85` and prepend that folder to your terminal's PATH with `$env:Path = 'C:\php85;' + $env:Path`. If `php --ri pdo_sqlite` reports that the driver is missing, use `php --ini` to find the active configuration. In `C:\php85\php.ini` for a fresh ZIP, set these lines and run the driver check again. [Windows PHP downloads](https://windows.php.net/download/) · [PDO SQLite documentation](https://www.php.net/manual/en/ref.pdo-sqlite.php)
 
-| Part | Implementation |
-| --- | --- |
-| Events | Eight fictional records in `events.js`, sorted by date and start time. Each record has a unique ID, society, time interval, venue and demo seat limit. |
-| Directory | `app.js` listens for search and society changes. It combines both filters, updates the result count and displays a no-results state when needed. |
-| RSVP | Native form validation checks the event selection and a whole seat count from 1 to 4. JavaScript checks sold-out events, insufficient capacity, duplicates and overlapping time intervals. |
-| Persistence | The browser stores only event IDs and seat counts in `localStorage`. The plan survives a reload in the same browser and site, with a temporary fallback when storage is blocked. Capacity is demo data and RSVPs are personal to the browser. |
-| Responsive design | The event grid uses one column below 640 px, two from 640 px, and three from 1100 px. Flexbox lays out the filters. At 1100 px the RSVP panel sits beside the directory. |
-| Accessibility | The page uses headings, landmarks, visible form labels, a skip link, visible keyboard focus and live feedback for filter and RSVP results. |
-| Hosting | GitHub Pages serves static HTML, CSS, JavaScript and the image. The browser handles all filters, validation and saved state. |
+```ini
+extension_dir = "C:\php85\ext"
+extension=pdo_sqlite
+```
+
+Setup was verified with PHP 8.5.13 and SQLite 3.54.1. The PHP app uses the local class-demo option. GitHub Pages serves the Assignment 1 static site and cannot execute PHP. [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
 
 ## Demo walkthrough
 
-1. Search `library` and choose **Literary Society**. Both controls apply at once. Clear them to restore all eight records.
-2. Open **Sketch the Courtyard**, enter `2` seats and save. The event appears under **My RSVPs** and the count increases.
-3. Try to save the same event again. Then try **Build Your First Web Page**, which overlaps the saved event. The form explains each result.
-4. Select **Campus Plant Walk** and request `4` seats to test capacity. Select **Poster Design Studio** to test the full-event message. Enter `0` for the seat count to see browser validation.
-5. Reload to check that a saved RSVP persists. Remove it from **My RSVPs** and confirm it stays removed after reload.
+1. Search for `library` and choose **Literary Society**. Two results appear. Choose **Computing Society** to see the empty state, then click **Clear**.
+2. Open **Sketch the Courtyard**, enter `2` seats and add `Bring a sketchbook` as a demo note. Click **Save RSVP**. The success message and **My RSVPs** update in place.
+3. Click **Edit** in **My RSVPs**, change the seat count to `3`, and click **Update RSVP**. Reload the page to confirm the edit is saved in the same session.
+4. Try **Build Your First Web Page** while Sketch the Courtyard is still saved. The server rejects the time conflict. Try requesting `4` seats for **Campus Plant Walk** to see its capacity error.
+5. Click **Remove** and confirm. The list and available seats update. Open a private window to see a separate RSVP plan.
 
-For a small live change, open `events.js`, change the venue for **Campus Chess Ladder**, then reload and search for the new venue. The change flows from the data array through filtering and card rendering.
+For a small live change, change the search match in `public/app.js` to omit descriptions. Search for `independently` before and after the edit to show how the filter changes. For a data change, add a new event with a unique ID to `db/events.json`, rerun `php db/seed.php`, and reload to see it.
 
-## Screenshots and design note
+## Application flow
 
-The [Word design note](docs/Assignment%201%20Design%20Note.docx) includes the wireframe, web development lifecycle, client and server responsibilities, verified browser checks and six captures from the live site.
+```text
+Browser form → Fetch JSON request → PHP endpoint → PDO → SQLite
+Browser DOM  ← JSON state/error  ← PHP response ← query result
+```
 
-![Deployed desktop portal with three event columns and RSVP sidebar](screenshots/desktop.png)
+| File | Responsibility |
+| --- | --- |
+| `public/index.php` | Accessible page and form. Starts the PHP session and escapes the CSRF token for the HTML meta attribute. |
+| `public/app.js` | Uses `fetch` with `async`/`await`, updates the DOM, and shows loading, empty, success, and error states without a navigation. |
+| `public/api/portal.php` | Parses JSON, checks CSRF on writes, runs the database operation, and responds with a status code and JSON. |
+| `app/reservations.php` | Validates and executes RSVP operations. Queries that use variable values use PDO placeholders. |
+| `app/bootstrap.php` | Sets session options and opens the private SQLite database. |
+| `db/schema.sql`, `db/events.json`, `db/seed.php` | Define the `events` and `rsvps` tables and load the existing demo catalogue. |
 
-[Tablet with two filtered results](screenshots/tablet-filter.png) · [Mobile with stacked controls](screenshots/mobile.png) · [Saved RSVP](screenshots/rsvp-saved.png) · [Conflict feedback](screenshots/rsvp-conflict.png) · [No matching events](screenshots/no-matches.png)
+`rsvps.event_id` references `events.id`. A unique constraint allows one RSVP per session owner and event. The server counts reservations from all sessions against event capacity and uses a write transaction to keep the check and write together. The owner comes from the PHP session. Listing, updating, and deleting a plan use that owner, and another session's RSVP ID returns `404`. Session cookies use HttpOnly and SameSite=Lax, with Secure enabled under HTTPS.
 
-## Deployment
+The browser sends the session's CSRF token in `X-CSRF-Token` for writes. The server checks event IDs, integer seat counts, note length, capacity, duplicates, and overlapping dates and times. Notes and catalogue text are inserted into the page through `textContent` or option text. The app does not use `localStorage` or `sessionStorage`. The local demo uses anonymous session ownership, so a new PHP session starts a new plan.
 
-GitHub Pages publishes `main` from the repository root. Keep `index.html` at the root and use relative asset URLs. After a push, check the **Pages build and deployment** workflow and open the site URL in **Settings → Pages**. [GitHub Pages publishing documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+### JSON endpoint
+
+All methods use `/api/portal.php`. Successful responses contain `events` with current availability and the current session's `rsvps`.
+
+| Method | Purpose | Example JSON body | Success |
+| --- | --- | --- | --- |
+| `GET` | Read events and the current plan | None | `200` |
+| `POST` | Create an RSVP | `{"eventId":"creative-sketch","seats":2,"note":"Bring a sketchbook"}` | `201` |
+| `PATCH` | Update seat count and note | `{"id":1,"seats":3,"note":"Bring pencils"}` | `200` |
+| `DELETE` | Remove an RSVP | `{"id":1}` | `200` |
+
+Failures return `{"error":"..."}`. The main cases are `400` for malformed JSON, `403` for missing or invalid CSRF, `404` for a missing or inaccessible RSVP, `409` for conflicts or insufficient seats, and `422` for invalid fields.
+
+## Tests
+
+```powershell
+py -3 tests/test_api.py
+```
+
+On systems where the Python executable is `python3`, run `python3 tests/test_api.py`. The test runner starts a PHP server on a free loopback port using a disposable SQLite database. Set `PORTAL_PHP` to the path of a PHP 8.5 executable if it is not first on PATH.
+
+| Case | Verified result |
+| --- | --- |
+| Seed twice and load the directory | Eight events appear and a new session's plan is empty. |
+| Missing or invalid input | Unknown events, missing seat counts, non-integers, out-of-range seats and long notes return `422`. |
+| Create and read | The RSVP appears for its owner and available seats fall. A duplicate returns `409`. |
+| Successful update | The new seat count and note persist while the RSVP ID and event stay the same. |
+| Delete | The plan clears and the event's seats are released. Repeating the deletion returns `404`. |
+| Another session and invalid CSRF | Another session cannot read, patch, or delete the RSVP. Missing and wrong tokens return `403`. |
+| Conflicts and request errors | Overlap, sold-out events, shared capacity, malformed JSON, unsupported methods, and requests for the private database are covered. |
+
+The automated API suite passed 11 tests. Browser checks covered four widths (320, 390, 768 and 1440 CSS pixels), loading and empty states, saving and editing without a page reload, safe note display, session isolation, and retry after a simulated HTTP failure.
+
+## Screenshots
+
+![Assignment 2 desktop event directory and RSVP form](screenshots/desktop.png)
+
+[Mobile layout](screenshots/mobile.png) · [Fetch loading](screenshots/fetch-loading.png) · [Successful RSVP update](screenshots/rsvp-updated.png) · [No matching events](screenshots/no-results.png) · [Retry after a simulated HTTP 503](screenshots/error-retry.png)
 
 ## AI assistance and attribution
 
-I used OpenAI Codex to build the portal, create eight fictional events, test the app, and write the documentation. I used OpenAI ImageGen for the campus photo.
-
-<details>
-<summary>Campus photograph generation</summary>
-
-Asset `assets/campus-societies.webp`, generated with the built-in ImageGen tool.
-
-> Create a realistic editorial photograph for the right half of a student society events portal hero. Wide 3:2 horizontal photograph, camera close at human eye height. A candid moment of five Pakistani university-age students at an informal outdoor student society club fair table, chatting and smiling naturally, one woman in a navy hijab and others in understated modern campus clothing. Warm late-afternoon light, tree-lined university courtyard, brick academic building lightly blurred, naturally different expressions, graphite and teal clothing accents, professionally photographed with restrained colors and rich natural shadows. Composition has the group in the center-right, with the left crop showing more soft tree shade. No writing, posters with readable text, logos, labels or watermarks. The group and their hands look natural. Photo only.
-
-</details>
+I used OpenAI Codex to extend the portal with the PHP API, SQLite schema, Fetch interactions, tests, and documentation. This version reuses the layout, styling, event records, and campus image from Assignment 1. The campus image was created with OpenAI ImageGen. [Assignment 1 source and image prompt](https://github.com/UrCoderAdil/student-society-activity-portal/tree/main#ai-assistance-and-attribution)
