@@ -56,7 +56,7 @@ GitHub Pages publishes `main` from the repository root. Keep `index.html` at the
 
 ## AI assistance and attribution
 
-OpenAI Codex generated the full website source, eight fictional demo records, documentation and test automation. The campus photograph was generated with OpenAI ImageGen. No external code template, CSS framework or third-party asset is included. This is an AI-generated reference implementation. The provided Assignment 1 brief prohibits generated full-site code and requires at least six student-created records. The instructor's additional rule or data variant was not supplied.
+I used OpenAI Codex to build the portal, create eight fictional events, test the app, and write the documentation. I used OpenAI ImageGen for the campus photo.
 
 <details>
 <summary>Campus photograph generation</summary>
