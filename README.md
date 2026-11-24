@@ -44,9 +44,11 @@ For a small live change, open `events.js`, change the venue for **Campus Chess L
 
 ## Screenshots and design note
 
-The Word design note includes a wireframe, web development lifecycle, client–server responsibilities and browser test results.
+The [Word design note](docs/Assignment%201%20Design%20Note.docx) includes the wireframe, web development lifecycle, client and server responsibilities, verified browser checks and six captures from the live site.
 
-<!-- Screenshot links and the design note are added after the live verification. -->
+![Deployed desktop portal with three event columns and RSVP sidebar](screenshots/desktop.png)
+
+[Tablet with two filtered results](screenshots/tablet-filter.png) · [Mobile with stacked controls](screenshots/mobile.png) · [Saved RSVP](screenshots/rsvp-saved.png) · [Conflict feedback](screenshots/rsvp-conflict.png) · [No matching events](screenshots/no-matches.png)
 
 ## Deployment
 
@@ -55,3 +57,12 @@ GitHub Pages publishes `main` from the repository root. Keep `index.html` at the
 ## AI assistance and attribution
 
 OpenAI Codex generated the full website source, eight fictional demo records, documentation and test automation. The campus photograph was generated with OpenAI ImageGen. No external code template, CSS framework or third-party asset is included. This is an AI-generated reference implementation. The provided Assignment 1 brief prohibits generated full-site code and requires at least six student-created records. The instructor's additional rule or data variant was not supplied.
+
+<details>
+<summary>Campus photograph generation</summary>
+
+Asset `assets/campus-societies.webp`, generated with the built-in ImageGen tool.
+
+> Create a realistic editorial photograph for the right half of a student society events portal hero. Wide 3:2 horizontal photograph, camera close at human eye height. A candid moment of five Pakistani university-age students at an informal outdoor student society club fair table, chatting and smiling naturally, one woman in a navy hijab and others in understated modern campus clothing. Warm late-afternoon light, tree-lined university courtyard, brick academic building lightly blurred, naturally different expressions, graphite and teal clothing accents, professionally photographed with restrained colors and rich natural shadows. Composition has the group in the center-right, with the left crop showing more soft tree shade. No writing, posters with readable text, logos, labels or watermarks. The group and their hands look natural. Photo only.
+
+</details>
